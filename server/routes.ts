@@ -1,10 +1,10 @@
 import { ObjectId } from "mongodb";
-
-import { Router, getExpressRouter } from "./framework/router";
-
 import { Authing, Posting, Sessioning } from "./app";
 import { PostOptions } from "./concepts/posting";
 import { SessionDoc } from "./concepts/sessioning";
+import { getExpressRouter, Router } from "./framework/router";
+
+
 
 /**
  * Web server routes for the app. Implements synchronizations between concepts.
@@ -71,7 +71,18 @@ class Routes {
   async deletePost(session: SessionDoc, id: string) {
     // TODO 3: delete the post with the given ID
     //  - require the user deleting to be the author of the post (review `updatePost` above)
-    throw new Error("Not implemented!");
+    const user = Sessioning.getUser(session);
+
+    // Convert the post ID string to ObjectId
+    const objId = new ObjectId(id);
+
+    // Assert that the user attempting to delete the post is the author
+    await Posting.assertAuthorIsUser(objId, user);
+
+    // Perform the delete operation
+    await Posting.delete(objId);
+
+    return { msg: "Post deleted successfully!" };
   }
 }
 
